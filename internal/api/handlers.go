@@ -33,12 +33,12 @@ type ErrorResponse struct {
 
 // SuccessResponse represents a successful operation response
 type SuccessResponse struct {
-	Message          string  `json:"message"`
-	Algorithm        string  `json:"algorithm"`
-	OriginalSize     int     `json:"original_size"`
-	ProcessedSize    int     `json:"processed_size"`
+	Message          string   `json:"message"`
+	Algorithm        string   `json:"algorithm"`
+	OriginalSize     int      `json:"original_size"`
+	ProcessedSize    int      `json:"processed_size"`
 	CompressionRatio *float64 `json:"compression_ratio,omitempty"`
-	Filename         string  `json:"filename"`
+	Filename         string   `json:"filename"`
 }
 
 // HandleCompress handles file compression requests
@@ -110,6 +110,7 @@ func HandleCompress(c *gin.Context) {
 
 	// Compress the file
 	compressedData, stats, err := compression.Compress(fileContent, options)
+	_ = stats // TODO: use stats (original size, processed size, ratio) or remove from return
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{
 			Error:   "Compression failed",
@@ -188,6 +189,7 @@ func HandleDecompress(c *gin.Context) {
 	decompressedData, stats, err := compression.Decompress(fileContent, compression.Options{
 		Algorithm: req.Algorithm,
 	})
+	_ = stats // TODO: use stats (original size, processed size, ratio) or remove from return
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{
 			Error:   "Decompression failed",
@@ -248,7 +250,7 @@ func getBaseFilename(filename string) string {
 	if filename == "" {
 		return "file"
 	}
-	
+
 	// Remove extension
 	for i := len(filename) - 1; i >= 0; i-- {
 		if filename[i] == '.' {
@@ -265,7 +267,7 @@ func getExtensionForAlgorithm(algorithm string) string {
 		"flate":   "flate",
 		"gzip":    "gz",
 	}
-	
+
 	if ext, exists := extensions[algorithm]; exists {
 		return ext
 	}
